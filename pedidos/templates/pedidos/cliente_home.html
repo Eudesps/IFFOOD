@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IFFOOD - Cliente</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2d3748;
+        }
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .nav-right a {
+            text-decoration: none;
+            color: #4a5568;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+        .nav-right a svg {
+            margin-right: 5px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .welcome-section h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin: 0;
+        }
+        .welcome-section p {
+            font-size: 1rem;
+            color: #718096;
+            margin-top: 5px;
+        }
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        .tab-button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid #e2e8f0;
+            background-color: #ffffff;
+            color: #4a5568;
+            border-radius: 8px;
+            margin: 0 5px;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+        .tab-button.active {
+            background-color: #2d3748;
+            color: #ffffff;
+            border-color: #2d3748;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .tab-button svg {
+            margin-right: 8px;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .search-bar {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-bottom: 30px;
+        }
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 25px;
+        }
+        .product-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+        }
+        .product-card h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-top: 0;
+            margin-bottom: 5px;
+        }
+        .product-card .category {
+            font-size: 0.75rem;
+            color: #ffffff;
+            background-color: #e53e3e;
+            padding: 4px 8px;
+            border-radius: 12px;
+            display: inline-block;
+            font-weight: 500;
+            margin-bottom: 15px;
+        }
+        .product-card .price {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #38a169;
+            margin-bottom: 20px;
+        }
+        .product-card .add-to-cart {
+            width: 100%;
+            background-color: #2d3748;
+            color: #ffffff;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 50px;
+            color: #a0aec0;
+            font-size: 1rem;
+        }
+        .footer {
+            /* Estilo para o footer ou barra inferior, se necessário */
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">IFFOOD</div>
+        <div class="nav-right">
+            <span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                {{ request.user.username }}
+            </span>
+            <a href="{% url 'logout' %}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-log-out"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                Sair
+            </a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="welcome-section">
+            <h1>Bem-vindo, {{ request.user.username }}!</h1>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-button active" id="cardapio-tab">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-book-open"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                Cardápio
+            </button>
+            <button class="tab-button" id="pedidos-tab">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-shopping-bag"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                Meus Pedidos
+            </button>
+        </div>
+
+        <div id="cardapio-content" class="tab-content active">
+            <input type="text" class="search-bar" placeholder="Buscar produto...">
+            <div class="products-grid">
+                {% comment %}
+                Exemplo de card de produto estático para a estrutura
+                <div class="product-card">
+                    <span class="category">Lanches</span>
+                    <h3>Hambúrguer Clássico</h3>
+                    <p class="price">R$ 25.90</p>
+                    <button class="add-to-cart">Adicionar ao pedido</button>
+                </div>
+                {% endcomment %}
+                
+                {% for produto in produtos %}
+                <div class="product-card">
+                    <span class="category">{{ produto.categoria }}</span>
+                    <h3>{{ produto.nome }}</h3>
+                    <p class="price">R$ {{ produto.preco }}</p>
+                    <button class="add-to-cart">Adicionar ao pedido</button>
+                </div>
+                {% empty %}
+                <p>Nenhum produto disponível no momento.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div id="pedidos-content" class="tab-content">
+            <div class="empty-state">
+                <p>Você ainda não fez nenhum pedido.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const cardapioTab = document.getElementById('cardapio-tab');
+        const pedidosTab = document.getElementById('pedidos-tab');
+        const cardapioContent = document.getElementById('cardapio-content');
+        const pedidosContent = document.getElementById('pedidos-content');
+
+        cardapioTab.addEventListener('click', () => {
+            cardapioTab.classList.add('active');
+            pedidosTab.classList.remove('active');
+            cardapioContent.classList.add('active');
+            pedidosContent.classList.remove('active');
+        });
+
+        pedidosTab.addEventListener('click', () => {
+            pedidosTab.classList.add('active');
+            cardapioTab.classList.remove('active');
+            pedidosContent.classList.add('active');
+            cardapioContent.classList.remove('active');
+        });
+    </script>
+</body>
+</html>

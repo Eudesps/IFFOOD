@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IFFOOD - Admin</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2d3748;
+        }
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .nav-right a {
+            text-decoration: none;
+            color: #4a5568;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+        .nav-right a svg {
+            margin-right: 5px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .welcome-section h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin: 0;
+        }
+        .welcome-section p {
+            font-size: 1rem;
+            color: #718096;
+            margin-top: 5px;
+        }
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        .tab-button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid #e2e8f0;
+            background-color: #ffffff;
+            color: #4a5568;
+            border-radius: 8px;
+            margin: 0 5px;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+        .tab-button.active {
+            background-color: #2d3748;
+            color: #ffffff;
+            border-color: #2d3748;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .tab-button svg {
+            margin-right: 8px;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .content-header h2 {
+            font-size: 1.5rem;
+            color: #2d3748;
+            margin: 0;
+        }
+        .btn-add-product {
+            background-color: #2d3748;
+            color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+        .btn-add-product:hover {
+            background-color: #1a202c;
+        }
+        .btn-add-product svg {
+            margin-right: 8px;
+        }
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 25px;
+        }
+        .product-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+        }
+        .product-card h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-top: 0;
+            margin-bottom: 5px;
+        }
+        .product-card .category {
+            font-size: 0.75rem;
+            color: #ffffff;
+            background-color: #e53e3e;
+            padding: 4px 8px;
+            border-radius: 12px;
+            display: inline-block;
+            font-weight: 500;
+            margin-bottom: 15px;
+        }
+        .product-card .price {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #38a169;
+            margin-bottom: 20px;
+        }
+        .product-card .actions {
+            display: flex;
+            gap: 10px;
+        }
+        .product-card .actions .btn {
+            background-color: #f7fafc;
+            border: 1px solid #e2e8f0;
+            color: #4a5568;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .product-card .actions .btn:hover {
+            background-color: #e2e8f0;
+        }
+        .product-card .actions .btn svg {
+            margin-right: 5px;
+        }
+        .pedidos-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .pedido-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .pedido-info h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin: 0;
+        }
+        .pedido-info p {
+            margin: 5px 0;
+            font-size: 0.9rem;
+            color: #4a5568;
+        }
+        .pedido-info .status {
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+        .status.pedido {
+            background-color: #ebf8ff;
+            color: #3182ce;
+        }
+        .status.preparando {
+            background-color: #fff3e0;
+            color: #ff9800;
+        }
+        .status.entrega {
+            background-color: #c8e6c9;
+            color: #4caf50;
+        }
+        .pedido-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .pedido-actions .price {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #38a169;
+        }
+        .pedido-actions select {
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .pedido-actions .btn-details {
+            background-color: #f7fafc;
+            border: 1px solid #e2e8f0;
+            color: #4a5568;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .pedido-actions .btn-details svg {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">IFFOOD - Painel Administrativo</div>
+        <div class="nav-right">
+            <span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user-check"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg>
+                {{ request.user.username }}
+            </span>
+            <a href="{% url 'logout' %}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-log-out"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                Sair
+            </a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="welcome-section">
+            <h1>Bem-vindo, Administrador!</h1>
+            <p>Gerencie produtos e acompanhe pedidos do seu restaurante</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-button active" id="produtos-tab">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-package"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                Produtos
+            </button>
+            <button class="tab-button" id="pedidos-tab">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-truck"><path d="M10 17H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"></path><path d="M12 17h10v-5a2 2 0 0 0-2-2h-8z"></path><circle cx="6" cy="17" r="2"></circle><circle cx="18" cy="17" r="2"></circle></svg>
+                Pedidos
+            </button>
+        </div>
+
+        <div id="produtos-content" class="tab-content active">
+            <div class="content-header">
+                <h2>Gerenciar Produtos</h2>
+                <a href="{% url 'add-produto' %}" class="btn-add-product">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    Adicionar Produto
+                </a>
+            </div>
+            
+            <div class="products-grid">
+                {% for produto in produtos %}
+                <div class="product-card">
+                    <span class="category">{{ produto.categoria }}</span>
+                    <h3>{{ produto.nome }}</h3>
+                    <p class="price">R$ {{ produto.preco }}</p>
+                    <div class="actions">
+                        <a href="{% url 'edit-produto' produto.id %}" class="btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                            Editar
+                        </a>
+                        <a href="{% url 'delete-produto' produto.id %}" class="btn" onclick="return confirm('Tem certeza que deseja excluir este produto?');">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                            Excluir
+                        </a>
+                    </div>
+                </div>
+                {% empty %}
+                <p>Nenhum produto cadastrado.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div id="pedidos-content" class="tab-content">
+            <div class="content-header">
+                <h2>Pedidos dos Clientes</h2>
+            </div>
+            <div class="pedidos-list">
+                {% for pedido in pedidos %}
+                <div class="pedido-card">
+                    <div class="pedido-info">
+                        <h3>Pedido #{{ pedido.id }}</h3>
+                        <p>Cliente: {{ pedido.cliente.username }}</p>
+                        <p>{{ pedido.data_criacao|date:"d/m/Y, H:i" }}</p>
+                        <span class="status {{ pedido.status_css_class }}">{{ pedido.get_status_display }}</span>
+                    </div>
+                    <div class="pedido-actions">
+                        <p class="price">R$ {{ pedido.valor_total }}</p>
+                        <a href="{% url 'detalhes-pedido' pedido.id %}" class="btn-details">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            Ver Detalhes
+                        </a>
+                        <form action="{% url 'update-status-pedido' pedido.id %}" method="post">
+                            {% csrf_token %}
+                            <select name="status" onchange="this.form.submit()">
+                                <option value="pendente" {% if pedido.status == 'pendente' %}selected{% endif %}>Pendente</option>
+                                <option value="em_preparo" {% if pedido.status == 'em_preparo' %}selected{% endif %}>Em preparo</option>
+                                <option value="entregue" {% if pedido.status == 'entregue' %}selected{% endif %}>Entregue</option>
+                            </select>
+                        </form>
+                    </div>
+                </div>
+                {% empty %}
+                <p>Nenhum pedido recebido ainda.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const produtosTab = document.getElementById('produtos-tab');
+        const pedidosTab = document.getElementById('pedidos-tab');
+        const produtosContent = document.getElementById('produtos-content');
+        const pedidosContent = document.getElementById('pedidos-content');
+
+        produtosTab.addEventListener('click', () => {
+            produtosTab.classList.add('active');
+            pedidosTab.classList.remove('active');
+            produtosContent.classList.add('active');
+            pedidosContent.classList.remove('active');
+        });
+
+        pedidosTab.addEventListener('click', () => {
+            pedidosTab.classList.add('active');
+            produtosTab.classList.remove('active');
+            pedidosContent.classList.add('active');
+            produtosContent.classList.remove('active');
+        });
+    </script>
+</body>
+</html>
