@@ -36,9 +36,9 @@ def login_view(request):
         else:
             error = "Credenciais inválidas."
         
-        return render(request, 'pedidos/login.html', {'error': error})
+        return render(request, 'login/login.html', {'error': error})
     
-    return render(request, 'pedidos/login.html')
+    return render(request, 'login/login.html')
 
 # View de Home (página inicial)
 @login_required
@@ -52,7 +52,7 @@ def home_view(request):
             'produtos': produtos,
             'pedidos': pedidos
         }
-        return render(request, 'pedidos/restaurante_home.html', context)
+        return render(request, 'restaurante/restaurante_home.html', context)
     
     elif is_cliente(request.user):
         produtos = Produto.objects.all()
@@ -61,7 +61,7 @@ def home_view(request):
             'produtos': produtos,
             'pedidos': [] # Lista vazia por enquanto
         }
-        return render(request, 'pedidos/cliente_home.html', context)
+        return render(request, 'cliente/cliente_home.html', context)
     
     # Caso o user_type seja inválido ou não definido
     return redirect('login')
@@ -89,7 +89,7 @@ def add_produto_view(request):
         form = ProdutoForm()
     
     context = {'form': form}
-    return render(request, 'pedidos/add_produto.html', context)
+    return render(request, 'restaurante/add_produto.html', context)
 
 @login_required
 @user_passes_test(is_restaurante)
@@ -104,7 +104,7 @@ def edit_produto_view(request, produto_id):
         form = ProdutoForm(instance=produto)
     
     context = {'form': form, 'produto': produto}
-    return render(request, 'pedidos/edit_produto.html', context)
+    return render(request, 'restaurante/edit_produto.html', context)
 
 @login_required
 @user_passes_test(is_restaurante)
@@ -114,7 +114,7 @@ def delete_produto_view(request, produto_id):
         produto.delete()
         return redirect('home')
     
-    return render(request, 'pedidos/delete_produto.html', {'produto': produto})
+    return render(request, 'restaurante/delete_produto.html', {'produto': produto})
 
 
 # --------------------------------------------------------------------------
@@ -141,4 +141,4 @@ def detalhes_pedido_view(request, pedido_id):
         'pedido': pedido,
         'itens_pedido': itens_pedido
     }
-    return render(request, 'pedidos/detalhes_pedido.html', context)
+    return render(request, 'restaurante/detalhes_pedido.html', context)
