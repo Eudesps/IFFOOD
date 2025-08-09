@@ -45,7 +45,6 @@ def login_view(request):
 def home_view(request):
     if is_restaurante(request.user):
         produtos = Produto.objects.all()
-        # Pedidos do mais novo para o mais antigo
         pedidos = Pedido.objects.all().order_by('-criado_em')
         
         context = {
@@ -56,14 +55,12 @@ def home_view(request):
     
     elif is_cliente(request.user):
         produtos = Produto.objects.all()
-        # Futuramente, vamos buscar os pedidos do cliente logado aqui
         context = {
             'produtos': produtos,
             'pedidos': [] # Lista vazia por enquanto
         }
         return render(request, 'cliente/cliente_home.html', context)
-    
-    # Caso o user_type seja inválido ou não definido
+
     return redirect('login')
 
 
@@ -71,11 +68,6 @@ def home_view(request):
 def logout_view(request):
     logout(request)
     return redirect('login')
-
-
-# --------------------------------------------------------------------------
-# Vistas para Gerenciamento de Produtos
-# --------------------------------------------------------------------------
 
 @login_required
 @user_passes_test(is_restaurante)
@@ -116,11 +108,6 @@ def delete_produto_view(request, produto_id):
     
     return render(request, 'restaurante/delete_produto.html', {'produto': produto})
 
-
-# --------------------------------------------------------------------------
-# Vistas para Gerenciamento de Pedidos
-# --------------------------------------------------------------------------
-
 @login_required
 @user_passes_test(is_restaurante)
 def update_status_pedido_view(request, pedido_id):
@@ -136,7 +123,7 @@ def update_status_pedido_view(request, pedido_id):
 @user_passes_test(is_restaurante)
 def detalhes_pedido_view(request, pedido_id):
     pedido = get_object_or_404(Pedido, id=pedido_id)
-    itens_pedido = pedido.itens.all() # assuming 'itens' is the related_name
+    itens_pedido = pedido.itens.all()
     context = {
         'pedido': pedido,
         'itens_pedido': itens_pedido
