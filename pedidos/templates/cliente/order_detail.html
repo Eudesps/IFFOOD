@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Pedido #{{ pedido.id }}</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f4f8;
+            padding: 50px;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+        }
+        .header-detail {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 20px;
+        }
+        .header-detail h2 {
+            font-size: 2rem;
+            color: #2d3748;
+            margin: 0;
+        }
+        .info-card {
+            background-color: #f7fafc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .info-card p {
+            margin: 0;
+            font-size: 1rem;
+            color: #4a5568;
+        }
+        .info-card p strong {
+            color: #2d3748;
+        }
+        .items-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .item:last-child {
+            border-bottom: none;
+        }
+        .item-name {
+            font-weight: 500;
+            color: #2d3748;
+        }
+        .item-info {
+            font-size: 0.9rem;
+            color: #718096;
+        }
+        .item-price {
+            font-weight: 600;
+            color: #38a169;
+        }
+        .total-section {
+            text-align: right;
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 2px solid #2d3748;
+        }
+        .total-section h4 {
+            font-size: 1.5rem;
+            color: #2d3748;
+            margin: 0;
+            display: inline-block;
+            margin-right: 15px;
+        }
+        .total-section .total-price {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #38a169;
+            display: inline-block;
+        }
+        .btn-back {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 12px 25px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            background-color: #f7fafc;
+            color: #4a5568;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+        .btn-back:hover {
+            background-color: #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-detail">
+            <h2>Detalhes do Pedido #{{ pedido.id }}</h2>
+        </div>
+        
+        <div class="info-card">
+            <p><strong>Status do Pedido:</strong> {{ pedido.get_status_display }}</p>
+            <p><strong>Data do Pedido:</strong> {{ pedido.criado_em|date:"d/m/Y - H:i" }}</p>
+        </div>
+
+        <h3>Itens do Pedido</h3>
+        <ul class="items-list">
+            {% for item in itens_pedido %}
+            <li class="item">
+                <div class="item-name">{{ item.produto.nome }}</div>
+                <div class="item-info">
+                    {{ item.quantidade }}x - R$ {{ item.produto.preco|floatformat:2 }} cada
+                </div>
+                <div class="item-price">R$ {{ item.subtotal|floatformat:2 }}</div>
+            </li>
+            {% empty %}
+            <li class="text-center text-muted">Nenhum item neste pedido.</li>
+            {% endfor %}
+        </ul>
+
+        <div class="total-section">
+            <h4>Total do Pedido:</h4>
+            <span class="total-price">R$ {{ pedido.total|floatformat:2 }}</span>
+        </div>
+
+        <a href="{% url 'home' %}" class="btn-back">Voltar para o Cardápio</a>
+    </div>
+</body>
+</html>

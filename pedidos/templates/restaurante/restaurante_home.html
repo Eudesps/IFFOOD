@@ -328,21 +328,21 @@
                     <div class="pedido-info">
                         <h3>Pedido #{{ pedido.id }}</h3>
                         <p>Cliente: {{ pedido.cliente.username }}</p>
-                        <p>{{ pedido.data_criacao|date:"d/m/Y, H:i" }}</p>
-                        <span class="status {{ pedido.status_css_class }}">{{ pedido.get_status_display }}</span>
+                        <p>{{ pedido.criado_em|date:"d/m/Y, H:i" }}</p>
                     </div>
                     <div class="pedido-actions">
-                        <p class="price">R$ {{ pedido.valor_total }}</p>
+                        <p class="price">R$ {{ pedido.total|floatformat:2 }}</p>
                         <a href="{% url 'detalhes-pedido' pedido.id %}" class="btn-details">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                             Ver Detalhes
                         </a>
+                        
                         <form action="{% url 'update-status-pedido' pedido.id %}" method="post">
                             {% csrf_token %}
                             <select name="status" onchange="this.form.submit()">
-                                <option value="pendente" {% if pedido.status == 'pendente' %}selected{% endif %}>Pendente</option>
+                                <option value="pedido" {% if pedido.status == 'pedido' %}selected{% endif %}>Pedido</option>
                                 <option value="em_preparo" {% if pedido.status == 'em_preparo' %}selected{% endif %}>Em preparo</option>
-                                <option value="entregue" {% if pedido.status == 'entregue' %}selected{% endif %}>Entregue</option>
+                                <option value="saiu_para_entrega" {% if pedido.status == 'saiu_para_entrega' %}selected{% endif %}>Saiu para entrega</option>
                             </select>
                         </form>
                     </div>
@@ -354,25 +354,37 @@
         </div>
     </div>
 
+
     <script>
-        const produtosTab = document.getElementById('produtos-tab');
-        const pedidosTab = document.getElementById('pedidos-tab');
-        const produtosContent = document.getElementById('produtos-content');
-        const pedidosContent = document.getElementById('pedidos-content');
+    const produtosTab = document.getElementById('produtos-tab');
+    const pedidosTab = document.getElementById('pedidos-tab');
+    const produtosContent = document.getElementById('produtos-content');
+    const pedidosContent = document.getElementById('pedidos-content');
 
-        produtosTab.addEventListener('click', () => {
-            produtosTab.classList.add('active');
-            pedidosTab.classList.remove('active');
-            produtosContent.classList.add('active');
-            pedidosContent.classList.remove('active');
-        });
-
-        pedidosTab.addEventListener('click', () => {
+    function setActiveTab(tabName) {
+        if (tabName === 'pedidos') {
             pedidosTab.classList.add('active');
             produtosTab.classList.remove('active');
             pedidosContent.classList.add('active');
             produtosContent.classList.remove('active');
-        });
-    </script>
+        } else {
+            // Padrão para a aba de produtos
+            produtosTab.classList.add('active');
+            pedidosTab.classList.remove('active');
+            produtosContent.classList.add('active');
+            pedidosContent.classList.remove('active');
+        }
+    }
+
+    produtosTab.addEventListener('click', () => setActiveTab('produtos'));
+    pedidosTab.addEventListener('click', () => setActiveTab('pedidos'));
+
+    // Lógica para verificar a URL e ativar a aba correta
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const activeTab = urlParams.get('tab') || 'produtos';
+        setActiveTab(activeTab);
+    });
+</script>
 </body>
 </html>

@@ -111,6 +111,8 @@
             border-radius: 12px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
             padding: 20px;
+            display: flex;
+            flex-direction: column;
         }
         .product-card h3 {
             font-size: 1.1rem;
@@ -119,7 +121,8 @@
             margin-top: 0;
             margin-bottom: 5px;
         }
-        .product-card .category {
+
+            .product-card .category {
             font-size: 0.75rem;
             color: #ffffff;
             background-color: #e53e3e;
@@ -128,24 +131,32 @@
             display: inline-block;
             font-weight: 500;
             margin-bottom: 15px;
+            align-self: flex-start; /* ADICIONADO: Impede que o item se estique */
         }
+
         .product-card .price {
             font-size: 1.25rem;
             font-weight: 600;
             color: #38a169;
             margin-bottom: 20px;
         }
-        .product-card .add-to-cart {
-            width: 100%;
-            background-color: #2d3748;
-            color: #ffffff;
-            border: none;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-        }
+
+        .product-card .add-to-cart-btn {
+        margin-top: auto; /* Empurra o botão para a parte inferior do card */
+        width: 100%;
+        background-color: #2d3748;
+        color: #ffffff;
+        border: none;
+        padding: 10px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-align: center;
+        text-decoration: none;
+        display: block;
+        box-sizing: border-box; /* Garante que o padding seja incluído na largura total */
+    }
         .empty-state {
             text-align: center;
             padding: 50px;
@@ -155,12 +166,104 @@
         .footer {
             /* Estilo para o footer ou barra inferior, se necessário */
         }
+        .nav-cart {
+            position: relative;
+        }
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #e53e3e;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .nav-right a {
+            position: relative;
+        }
+        /* NOVO CSS para a tela de pedidos */
+        .orders-list {
+            display: grid;
+            gap: 20px;
+        }
+        .order-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 25px;
+        }
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .order-id {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin: 0;
+        }
+        .order-status {
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 12px;
+        }
+        .status-pedido {
+            background-color: #ebf8ff;
+            color: #3182ce;
+        }
+        .status-em_preparo {
+            background-color: #fff3e0;
+            color: #ff9800;
+        }
+        .status-saiu_para_entrega {
+            background-color: #c8e6c9;
+            color: #4caf50;
+        }
+        .order-body p {
+            margin: 0 0 8px 0;
+            font-size: 0.95rem;
+            color: #4a5568;
+        }
+        .order-total {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #38a169;
+        }
+        .order-actions {
+            text-align: right;
+            margin-top: 20px;
+        }
+        .btn-details {
+            background-color: #f7fafc;
+            border: 1px solid #e2e8f0;
+            color: #4a5568;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+        .btn-details:hover {
+            background-color: #e2e8f0;
+        }
     </style>
 </head>
 <body>
     <header class="header">
         <div class="logo">IFFOOD</div>
         <div class="nav-right">
+            <a href="{% url 'cart' %}" class="nav-cart">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-shopping-cart"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                {% if cart_item_count > 0 %}
+                    <span class="cart-count">{{ cart_item_count }}</span>
+                {% endif %}
+            </a>
             <span>
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                 {{ request.user.username }}
@@ -191,22 +294,14 @@
         <div id="cardapio-content" class="tab-content active">
             <input type="text" class="search-bar" placeholder="Buscar produto...">
             <div class="products-grid">
-                {% comment %}
-                Exemplo de card de produto estático para a estrutura
-                <div class="product-card">
-                    <span class="category">Lanches</span>
-                    <h3>Hambúrguer Clássico</h3>
-                    <p class="price">R$ 25.90</p>
-                    <button class="add-to-cart">Adicionar ao pedido</button>
-                </div>
-                {% endcomment %}
-                
                 {% for produto in produtos %}
                 <div class="product-card">
                     <span class="category">{{ produto.categoria }}</span>
                     <h3>{{ produto.nome }}</h3>
-                    <p class="price">R$ {{ produto.preco }}</p>
-                    <button class="add-to-cart">Adicionar ao pedido</button>
+                    <p class="price">R$ {{ produto.preco|floatformat:2 }}</p>
+                    <a href="{% url 'add_to_cart' produto.id %}" class="add-to-cart-btn">
+                        Adicionar ao pedido
+                    </a>
                 </div>
                 {% empty %}
                 <p>Nenhum produto disponível no momento.</p>
@@ -215,12 +310,32 @@
         </div>
 
         <div id="pedidos-content" class="tab-content">
-            <div class="empty-state">
-                <p>Você ainda não fez nenhum pedido.</p>
+            <div class="my-orders-section">
+                <div class="orders-list">
+                    {% if pedidos %}
+                        {% for pedido in pedidos %}
+                        <div class="order-card">
+                            <div class="order-header">
+                                <h5 class="order-id">Pedido #{{ pedido.id }}</h5>
+                                <span class="order-status status-{{ pedido.status }}">{{ pedido.get_status_display }}</span>
+                            </div>
+                            <div class="order-body">
+                                <p><strong>Data do Pedido:</strong> {{ pedido.criado_em|date:"d/m/Y, H:i" }}</p>
+                                <p><strong>Total:</strong> <span class="order-total">R$ {{ pedido.total|floatformat:2 }}</span></p>
+                            </div>
+                            <div class="order-actions">
+                                <a href="{% url 'order_detail' pedido.id %}" class="btn btn-details">Ver Detalhes</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-center text-muted">Você ainda não fez nenhum pedido.</p>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
-
+    
     <script>
         const cardapioTab = document.getElementById('cardapio-tab');
         const pedidosTab = document.getElementById('pedidos-tab');
@@ -239,6 +354,10 @@
             cardapioTab.classList.remove('active');
             pedidosContent.classList.add('active');
             cardapioContent.classList.remove('active');
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            cardapioTab.click();
         });
     </script>
 </body>

@@ -16,4 +16,11 @@ urlpatterns = [
     # URLs de gerenciamento de pedidos (para restaurante)
     path('pedidos/atualizar-status/<int:pedido_id>/', views.update_status_pedido_view, name='update-status-pedido'),
     path('pedidos/detalhes/<int:pedido_id>/', views.detalhes_pedido_view, name='detalhes-pedido'),
+    
+    # URLs para os clientes
+    path('adicionar-ao-carrinho/<int:produto_id>/', views.add_to_cart_view, name='add_to_cart'),
+    path('carrinho/', views.cart_view, name='cart'),
+    path('carrinho/remover/<int:produto_id>/', views.remove_from_cart_view, name='remove_from_cart'),
+    path('finalizar-pedido/', views.checkout_view, name='checkout'),
+    path('meus-pedidos/<int:pedido_id>/', views.order_detail_view, name='order_detail'),
 ]
