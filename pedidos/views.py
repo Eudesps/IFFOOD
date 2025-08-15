@@ -145,32 +145,36 @@ def detalhes_pedido_view(request, pedido_id):
     }
     return render(request, 'restaurante/detalhes_pedido.html', context)
 
+
 @login_required
 @user_passes_test(is_cliente)
 def add_to_cart_view(request, produto_id):
-    produto = get_object_or_404(Produto, id=produto_id)
-    
-    # Inicializa o carrinho na sessão se ele não existir
-    if 'cart' not in request.session:
-        request.session['cart'] = {}
+    if request.method == 'POST':
+        produto = get_object_or_404(Produto, id=produto_id)
         
-    cart = request.session['cart']
+        if 'cart' not in request.session:
+            request.session['cart'] = {}
+            
+        cart = request.session['cart']
+        produto_id_str = str(produto.id)
+        
+        if produto_id_str in cart:
+            cart[produto_id_str]['quantidade'] += 1
+        else:
+            cart[produto_id_str] = {
+                'quantidade': 1,
+                'nome': produto.nome,
+                'preco': str(produto.preco)
+            }
+        
+        request.session.modified = True
+        
+        # Retorna uma resposta JSON com o novo contador de itens
+        cart_item_count = sum(item['quantidade'] for item in cart.values())
+        return JsonResponse({'cart_item_count': cart_item_count, 'success': True})
     
-    # Adiciona o produto ao carrinho
-    # A chave será o ID do produto e o valor será a quantidade
-    produto_id_str = str(produto.id)
-    if produto_id_str in cart:
-        cart[produto_id_str]['quantidade'] += 1
-    else:
-        cart[produto_id_str] = {
-            'quantidade': 1,
-            'nome': produto.nome,
-            'preco': str(produto.preco) # Armazena o preço como string para evitar problemas de serialização
-        }
-    
-    request.session.modified = True
-    
-    return redirect('home') # Redireciona de volta para a página inicial
+    # Se não for POST, redireciona ou retorna um erro
+    return JsonResponse({'success': False, 'error': 'Método de requisição inválido'}, status=405)
 
 @login_required
 @user_passes_test(is_cliente)
