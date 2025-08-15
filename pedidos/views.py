@@ -131,7 +131,6 @@ def update_status_pedido_view(request, pedido_id):
             pedido.status = status
             pedido.save()
             
-    # Redireciona de volta para a home com um parâmetro de aba
     return redirect(f"{reverse('home')}?tab=pedidos")
 
 @login_required
@@ -169,11 +168,9 @@ def add_to_cart_view(request, produto_id):
         
         request.session.modified = True
         
-        # Retorna uma resposta JSON com o novo contador de itens
         cart_item_count = sum(item['quantidade'] for item in cart.values())
         return JsonResponse({'cart_item_count': cart_item_count, 'success': True})
     
-    # Se não for POST, redireciona ou retorna um erro
     return JsonResponse({'success': False, 'error': 'Método de requisição inválido'}, status=405)
 
 @login_required
@@ -183,7 +180,6 @@ def cart_view(request):
     
     cart_items = []
     total = 0
-    # Calcula a contagem de itens
     cart_item_count = sum(item['quantidade'] for item in cart.values())
 
     for produto_id, item_data in cart.items():
@@ -199,7 +195,7 @@ def cart_view(request):
     context = {
         'cart_items': cart_items,
         'cart_total': total,
-        'cart_item_count': cart_item_count, # Passa a contagem para o template
+        'cart_item_count': cart_item_count,
     }
     
     return render(request, 'cliente/cart.html', context)
@@ -219,7 +215,6 @@ def checkout_view(request):
                 total_final = 0
                 itens_do_pedido = []
 
-                # 1. First, calculate the total and prepare the items
                 for produto_id_str, item_data in cart.items():
                     produto = get_object_or_404(Produto, id=int(produto_id_str))
                     quantidade = item_data['quantidade']
@@ -230,14 +225,12 @@ def checkout_view(request):
                         'quantidade': quantidade
                     })
 
-                # 2. Only after the total is known, create the Pedido object
                 pedido = Pedido.objects.create(
                     cliente=request.user,
-                    total=total_final, # Assign the calculated total here
+                    total=total_final,
                     status='pedido'
                 )
 
-                # 3. Create the items for the new order
                 for item in itens_do_pedido:
                     ProdutoNoPedido.objects.create(
                         pedido=pedido,
@@ -245,7 +238,6 @@ def checkout_view(request):
                         quantidade=item['quantidade']
                     )
 
-                # 4. Clear the cart
                 del request.session['cart']
                 request.session.modified = True
 
@@ -265,11 +257,8 @@ def checkout_view(request):
 @login_required
 @user_passes_test(is_cliente)
 def order_detail_view(request, pedido_id):
-    # Busca o pedido, garantindo que ele pertença ao cliente logado
     pedido = get_object_or_404(Pedido, id=pedido_id, cliente=request.user)
-    
-    # Busca todos os itens (produtos) associados a este pedido, usando o related_name 'itens'
-    itens_pedido = pedido.itens.all() # <-- AQUI ESTÁ A CORREÇÃO
+    itens_pedido = pedido.itens.all()
 
     context = {
         'pedido': pedido,
@@ -292,7 +281,6 @@ def remove_from_cart_view(request, produto_id):
     return redirect('cart')
 
 def search_products_view(request):
-    """View para busca dinâmica de produtos (AJAX)."""
     query = request.GET.get('q', '')
     if query:
         produtos = Produto.objects.filter(
@@ -301,7 +289,6 @@ def search_products_view(request):
     else:
         produtos = Produto.objects.all()
 
-    # Formata os produtos para JSON
     results = [
         {
             'id': produto.id,
