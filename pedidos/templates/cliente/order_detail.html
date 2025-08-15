@@ -128,7 +128,6 @@
                 <div class="item-info">
                     {{ item.quantidade }}x - R$ {{ item.produto.preco|floatformat:2 }} cada
                 </div>
-                <div class="item-price">R$ {{ item.subtotal|floatformat:2 }}</div>
             </li>
             {% empty %}
             <li class="text-center text-muted">Nenhum item neste pedido.</li>

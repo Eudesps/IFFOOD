@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -5,12 +6,76 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IFFOOD - Cliente</title>
     <style>
+        
+        /* CSS para o Popup */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s, opacity 0.3s;
+        }
+
+        .popup-overlay.show {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .popup-content {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 400px;
+            transform: scale(0.9);
+            transition: transform 0.3s;
+        }
+
+        .popup-overlay.show .popup-content {
+            transform: scale(1);
+        }
+
+        .popup-content h3 {
+            font-size: 1.5rem;
+            color: #38a169;
+            margin-bottom: 10px;
+        }
+
+        .popup-content p {
+            font-size: 1rem;
+            color: #4a5568;
+            margin-bottom: 20px;
+        }
+
+        .popup-content .btn-ok {
+            background-color: #2d3748;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .popup-content .btn-ok:hover {
+            background-color: #1a202c;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: #f0f4f8;
             margin: 0;
-            padding: 0;
-            padding-top: 70px;
+            padding: 70px 0 0; /* Ajuste para a navbar fixa */
         }
         .header {
             background-color: #ffffff;
@@ -19,12 +84,12 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: fixed; /* ADICIONADO: Mantém o elemento fixo na tela */
-            top: 0;          /* ADICIONADO: Alinha o topo com o topo da tela */
-            left: 0;         /* ADICIONADO: Alinha a esquerda */
-            right: 0;        /* ADICIONADO: Alinha a direita */
-            z-index: 1000;   /* ADICIONADO: Garante que a navbar fique por cima de outros elementos */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Opcional: Adiciona uma sombra sutil */
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
         .logo {
             font-size: 1.5rem;
@@ -36,7 +101,7 @@
             align-items: center;
             gap: 20px;
         }
-        .nav-right a {
+        .nav-right a, .nav-right span {
             text-decoration: none;
             color: #4a5568;
             font-weight: 500;
@@ -45,6 +110,20 @@
         }
         .nav-right a svg {
             margin-right: 5px;
+        }
+        .nav-cart {
+            position: relative;
+        }
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #e53e3e;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
         }
         .container {
             max-width: 1200px;
@@ -128,8 +207,7 @@
             margin-top: 0;
             margin-bottom: 5px;
         }
-
-            .product-card .category {
+        .product-card .category {
             font-size: 0.75rem;
             color: #ffffff;
             background-color: #e53e3e;
@@ -138,59 +216,36 @@
             display: inline-block;
             font-weight: 500;
             margin-bottom: 15px;
-            align-self: flex-start; /* ADICIONADO: Impede que o item se estique */
+            align-self: flex-start;
         }
-
         .product-card .price {
             font-size: 1.25rem;
             font-weight: 600;
             color: #38a169;
             margin-bottom: 20px;
         }
-
-        .product-card .add-to-cart-btn {
-        margin-top: auto; /* Empurra o botão para a parte inferior do card */
-        width: 100%;
-        background-color: #2d3748;
-        color: #ffffff;
-        border: none;
-        padding: 10px;
-        border-radius: 8px;
-        font-size: 0.9rem;
-        font-weight: 600;
-        cursor: pointer;
-        text-align: center;
-        text-decoration: none;
-        display: block;
-        box-sizing: border-box; /* Garante que o padding seja incluído na largura total */
-    }
+        .add-to-cart-btn {
+            margin-top: auto;
+            width: 100%;
+            background-color: #2d3748;
+            color: #ffffff;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+            box-sizing: border-box;
+        }
         .empty-state {
             text-align: center;
             padding: 50px;
             color: #a0aec0;
             font-size: 1rem;
         }
-        .footer {
-            /* Estilo para o footer ou barra inferior, se necessário */
-        }
-        .nav-cart {
-            position: relative;
-        }
-        .cart-count {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background-color: #e53e3e;
-            color: white;
-            border-radius: 50%;
-            padding: 2px 6px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        .nav-right a {
-            position: relative;
-        }
-        /* NOVO CSS para a tela de pedidos */
         .orders-list {
             display: grid;
             gap: 20px;
@@ -298,16 +353,14 @@
             </button>
         </div>
 
-
         <div id="cardapio-content" class="tab-content active">
-            <input type="text" class="search-bar" placeholder="Buscar produto...">
-            <div class="products-grid">
+            <input type="text" id="search-bar" class="search-bar" placeholder="Buscar produto...">
+            <div id="products-grid" class="products-grid">
                 {% for produto in produtos %}
                 <div class="product-card">
                     <span class="category">{{ produto.categoria }}</span>
                     <h3>{{ produto.nome }}</h3>
                     <p class="price">R$ {{ produto.preco|floatformat:2 }}</p>
-                    
                     <button class="add-to-cart-btn" data-product-id="{{ produto.id }}">
                         Adicionar ao pedido
                     </button>
@@ -345,89 +398,154 @@
         </div>
     </div>
     
+    {% if messages %}
+        <div id="popup-overlay" class="popup-overlay">
+            <div class="popup-content">
+                <h3>Sucesso!</h3>
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+                <button class="btn-ok" onclick="document.getElementById('popup-overlay').classList.remove('show');">Entendi</button>
+            </div>
+        </div>
+    {% endif %}
+
     <script>
-
-            // Função para obter o CSRF Token
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.startsWith(name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-
-    const cartCountSpan = document.querySelector('.cart-count');
-    const addButtons = document.querySelectorAll('.add-to-cart-btn');
-
-    addButtons.forEach(button => {
-        button.addEventListener('click', async (event) => {
-            const productId = event.target.dataset.productId;
-            const csrfToken = getCookie('csrftoken');
-
-            try {
-                const response = await fetch(`/adicionar-ao-carrinho/${productId}/`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': csrfToken,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({})
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    
-                    // Atualiza o contador do carrinho
-                    if (cartCountSpan) {
-                        cartCountSpan.textContent = data.cart_item_count;
-                    } else {
-                        // Se o contador não existir (carrinho vazio), cria um
-                        const cartNav = document.querySelector('.nav-cart');
-                        const newCountSpan = document.createElement('span');
-                        newCountSpan.className = 'cart-count';
-                        newCountSpan.textContent = data.cart_item_count;
-                        cartNav.appendChild(newCountSpan);
-                    }
-                } else {
-                    console.error('Erro ao adicionar produto:', response.status);
-                    alert('Não foi possível adicionar o produto ao carrinho.');
-                }
-            } catch (error) {
-                console.error('Erro de rede:', error);
-                alert('Ocorreu um erro. Tente novamente.');
-            }
-        });
-    });
-
+        // Lógica de Tabs
         const cardapioTab = document.getElementById('cardapio-tab');
         const pedidosTab = document.getElementById('pedidos-tab');
         const cardapioContent = document.getElementById('cardapio-content');
         const pedidosContent = document.getElementById('pedidos-content');
 
-        cardapioTab.addEventListener('click', () => {
-            cardapioTab.classList.add('active');
-            pedidosTab.classList.remove('active');
-            cardapioContent.classList.add('active');
-            pedidosContent.classList.remove('active');
-        });
+        function setActiveTab(tabName) {
+            if (tabName === 'pedidos') {
+                pedidosTab.classList.add('active');
+                cardapioTab.classList.remove('active');
+                pedidosContent.classList.add('active');
+                cardapioContent.classList.remove('active');
+            } else {
+                cardapioTab.classList.add('active');
+                pedidosTab.classList.remove('active');
+                cardapioContent.classList.add('active');
+                pedidosContent.classList.remove('active');
+            }
+        }
 
-        pedidosTab.addEventListener('click', () => {
-            pedidosTab.classList.add('active');
-            cardapioTab.classList.remove('active');
-            pedidosContent.classList.add('active');
-            cardapioContent.classList.remove('active');
-        });
+        cardapioTab.addEventListener('click', () => setActiveTab('cardapio'));
+        pedidosTab.addEventListener('click', () => setActiveTab('pedidos'));
 
         document.addEventListener('DOMContentLoaded', () => {
-            cardapioTab.click();
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('show_orders')) {
+                setActiveTab('pedidos');
+            } else {
+                setActiveTab('cardapio');
+            }
+
+            // Exibir o popup de sucesso, se houver
+            const popupOverlay = document.getElementById('popup-overlay');
+            if (popupOverlay) {
+                popupOverlay.classList.add('show');
+            }
         });
+
+        // Lógica da busca dinâmica
+        const searchInput = document.getElementById('search-bar');
+        const productsGrid = document.getElementById('products-grid');
+        let timeout = null;
+
+        searchInput.addEventListener('input', (event) => {
+            clearTimeout(timeout);
+            const query = event.target.value;
+
+            timeout = setTimeout(async () => {
+                const response = await fetch(`{% url 'search_products' %}?q=${query}`);
+                const products = await response.json();
+                
+                productsGrid.innerHTML = ''; // Limpa a grid atual
+
+                if (products.length > 0) {
+                    products.forEach(product => {
+                        const productCard = document.createElement('div');
+                        productCard.className = 'product-card';
+                        productCard.innerHTML = `
+                            <span class="category">${product.categoria}</span>
+                            <h3>${product.nome}</h3>
+                            <p class="price">R$ ${parseFloat(product.preco).toFixed(2)}</p>
+                            <button class="add-to-cart-btn" data-product-id="${product.id}">
+                                Adicionar ao pedido
+                            </button>
+                        `;
+                        productsGrid.appendChild(productCard);
+                    });
+                } else {
+                    productsGrid.innerHTML = '<p class="empty-state">Nenhum produto encontrado.</p>';
+                }
+
+                // Reinicializa os botões do carrinho após a busca
+                rebindAddToCartButtons();
+            }, 300);
+        });
+        
+        // Lógica para adicionar ao carrinho
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.startsWith(name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function rebindAddToCartButtons() {
+            const cartCountSpan = document.querySelector('.cart-count');
+            const addButtons = document.querySelectorAll('.add-to-cart-btn');
+
+            addButtons.forEach(button => {
+                button.addEventListener('click', async (event) => {
+                    const productId = event.target.dataset.productId;
+                    const csrfToken = getCookie('csrftoken');
+
+                    try {
+                        const response = await fetch(`{% url 'add_to_cart' 0 %}`.replace('0', productId), {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': csrfToken,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({})
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (cartCountSpan) {
+                                cartCountSpan.textContent = data.cart_item_count;
+                            } else {
+                                const cartNav = document.querySelector('.nav-cart');
+                                const newCountSpan = document.createElement('span');
+                                newCountSpan.className = 'cart-count';
+                                newCountSpan.textContent = data.cart_item_count;
+                                cartNav.appendChild(newCountSpan);
+                            }
+                        } else {
+                            console.error('Erro ao adicionar produto:', response.status);
+                            alert('Não foi possível adicionar o produto ao carrinho.');
+                        }
+                    } catch (error) {
+                        console.error('Erro de rede:', error);
+                        alert('Ocorreu um erro. Tente novamente.');
+                    }
+                });
+            });
+        }
+
+        rebindAddToCartButtons();
     </script>
 </body>
 </html>

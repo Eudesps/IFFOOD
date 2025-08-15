@@ -7,6 +7,8 @@ from .models import Produto, Pedido, ProdutoNoPedido
 from .forms import ProdutoForm
 from django.db import transaction
 from django.http import JsonResponse
+from django.db.models import Q
+from django.contrib import messages
 
 # Função para verificar se o usuário é um restaurante
 def is_restaurante(user):
@@ -43,6 +45,7 @@ def login_view(request):
     return render(request, 'login/login.html')
 
 # View de Home (página inicial)
+
 @login_required
 def home_view(request):
     if is_restaurante(request.user):
@@ -57,17 +60,14 @@ def home_view(request):
     
     elif is_cliente(request.user):
         produtos = Produto.objects.all()
-        
-        # BUSCA OS PEDIDOS DO CLIENTE LOGADO
         pedidos = Pedido.objects.filter(cliente=request.user).order_by('-criado_em')
-        
         cart = request.session.get('cart', {})
         cart_item_count = sum(item['quantidade'] for item in cart.values())
         
         context = {
             'produtos': produtos,
             'pedidos': pedidos,
-            'cart_item_count': cart_item_count
+            'cart_item_count': cart_item_count,
         }
         return render(request, 'cliente/cliente_home.html', context)
     
@@ -211,55 +211,56 @@ def checkout_view(request):
     if request.method == 'POST':
         cart = request.session.get('cart', {})
         if not cart:
-            return redirect('home')  # Redireciona se o carrinho estiver vazio
+            messages.error(request, 'O seu carrinho está vazio.')
+            return redirect('cart')
 
         try:
             with transaction.atomic():
-                # 1. Cria o objeto Pedido
+                total_final = 0
+                itens_do_pedido = []
+
+                # 1. First, calculate the total and prepare the items
+                for produto_id_str, item_data in cart.items():
+                    produto = get_object_or_404(Produto, id=int(produto_id_str))
+                    quantidade = item_data['quantidade']
+                    subtotal = produto.preco * quantidade
+                    total_final += subtotal
+                    itens_do_pedido.append({
+                        'produto': produto,
+                        'quantidade': quantidade
+                    })
+
+                # 2. Only after the total is known, create the Pedido object
                 pedido = Pedido.objects.create(
                     cliente=request.user,
-                    total=0,  # O total será calculado abaixo
-                    status='pedido' # Define o status inicial
+                    total=total_final, # Assign the calculated total here
+                    status='pedido'
                 )
 
-                total_final = 0
-                
-                # 2. Itera sobre os itens do carrinho e cria os objetos ProdutoNoPedido
-                for produto_id_str, item_data in cart.items():
-                    produto = Produto.objects.get(id=int(produto_id_str))
-                    quantidade = item_data['quantidade']
-                    
-                    # Cria a relação ProdutoNoPedido
+                # 3. Create the items for the new order
+                for item in itens_do_pedido:
                     ProdutoNoPedido.objects.create(
                         pedido=pedido,
-                        produto=produto,
-                        quantidade=quantidade
+                        produto=item['produto'],
+                        quantidade=item['quantidade']
                     )
-                    
-                    # Calcula o total do pedido
-                    total_final += produto.preco * quantidade
-                
-                # 3. Atualiza o total no objeto Pedido
-                pedido.total = total_final
-                pedido.save()
-                
-                # 4. Limpa o carrinho da sessão
+
+                # 4. Clear the cart
                 del request.session['cart']
-                
-                # Mensagem de sucesso (opcional, pode ser adicionada no futuro)
-                # messages.success(request, 'Seu pedido foi finalizado com sucesso!')
-                
-                # Redireciona para uma página de confirmação ou para a home
+                request.session.modified = True
+
+                messages.success(request, 'Pedido finalizado com sucesso! Você pode acompanhar o status na seção "Meus Pedidos".')
                 return redirect('home')
 
         except Produto.DoesNotExist:
-            return render(request, 'pedidos/error.html', {'message': 'Um dos produtos não foi encontrado.'})
+            messages.error(request, 'Um dos produtos não foi encontrado. Por favor, verifique seu carrinho.')
+            return redirect('cart')
         except Exception as e:
-            # Lida com outros erros, como problemas de banco de dados
-            return render(request, 'pedidos/error.html', {'message': f'Ocorreu um erro ao finalizar o pedido: {e}'})
+            messages.error(request, f'Ocorreu um erro ao finalizar o pedido: {e}')
+            return redirect('cart')
 
-    # Se a requisição não for POST, redireciona para o carrinho
     return redirect('cart')
+
 
 @login_required
 @user_passes_test(is_cliente)
@@ -267,8 +268,8 @@ def order_detail_view(request, pedido_id):
     # Busca o pedido, garantindo que ele pertença ao cliente logado
     pedido = get_object_or_404(Pedido, id=pedido_id, cliente=request.user)
     
-    # Busca todos os itens (produtos) associados a este pedido
-    itens_pedido = pedido.produtonopedido_set.all()
+    # Busca todos os itens (produtos) associados a este pedido, usando o related_name 'itens'
+    itens_pedido = pedido.itens.all() # <-- AQUI ESTÁ A CORREÇÃO
 
     context = {
         'pedido': pedido,
@@ -289,3 +290,26 @@ def remove_from_cart_view(request, produto_id):
             request.session.modified = True
             
     return redirect('cart')
+
+def search_products_view(request):
+    """View para busca dinâmica de produtos (AJAX)."""
+    query = request.GET.get('q', '')
+    if query:
+        produtos = Produto.objects.filter(
+            Q(nome__icontains=query) | Q(categoria__icontains=query)
+        )
+    else:
+        produtos = Produto.objects.all()
+
+    # Formata os produtos para JSON
+    results = [
+        {
+            'id': produto.id,
+            'nome': produto.nome,
+            'preco': str(produto.preco),
+            'categoria': produto.categoria,
+        }
+        for produto in produtos
+    ]
+    
+    return JsonResponse(results, safe=False)
