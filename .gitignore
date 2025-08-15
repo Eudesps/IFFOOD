@@ -1,2 +1,5 @@
 #Ambiente virtual
 venv
+
+#db
+db.sqlite3
