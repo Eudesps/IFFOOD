@@ -51,26 +51,27 @@
         justify-content: space-between;
         background-color: #f7fafc;
         padding: 4px; /* Reduzido o padding */
-        border-radius: 8px;
+        border-radius: 50px;
         margin-bottom: 20px; /* Reduzida a margem */
     }
     .tab-button {
         flex: 1;
-        padding: 10px; /* Reduzido o padding */
-        font-size: 0.9rem; /* Tamanho da fonte levemente reduzido */
+        padding: 12px 20px;
+        font-size: 1rem;
         font-weight: 500;
         cursor: pointer;
-        border-radius: 6px;
+        border-radius: 50px; /* Borda bem arredondada */
         background-color: transparent;
-        color: #718096;
+        color: #4a5568;
         border: none;
-        transition: background-color 0.3s ease;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
         display: flex;
         align-items: center;
         justify-content: center;
+        white-space: nowrap; /* Impede a quebra de linha */
     }
     .tab-button.active {
-        background-color: #ffffff;
+        background-color: #ffffff; /* Fundo branco para a aba ativa */
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         color: #2d3748;
     }

@@ -9,6 +9,7 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.db.models import Q
 from django.contrib import messages
+import json
 
 # Função para verificar se o usuário é um restaurante
 def is_restaurante(user):
@@ -82,30 +83,46 @@ def logout_view(request):
 @user_passes_test(is_restaurante)
 def add_produto_view(request):
     if request.method == 'POST':
-        form = ProdutoForm(request.POST)
+        data = json.loads(request.body)
+        form = ProdutoForm(data)
         if form.is_valid():
-            form.save()
-            return redirect('home')
-    else:
-        form = ProdutoForm()
+            produto = form.save()
+            return JsonResponse({
+                'success': True,
+                'message': 'Produto adicionado com sucesso!',
+                'produto': {
+                    'id': produto.id,
+                    'nome': produto.nome,
+                    'preco': str(produto.preco),
+                    'categoria': produto.categoria,
+                }
+            })
+        return JsonResponse({'success': False, 'errors': form.errors})
     
-    context = {'form': form}
-    return render(request, 'restaurante/add_produto.html', context)
+    # Esta parte agora pode ser removida, pois a tela não será mais acessada
+    # return render(request, 'pedidos/add_produto.html', {'form': form})
+    return JsonResponse({'success': False, 'message': 'Método de requisição inválido.'}, status=405)
 
 @login_required
 @user_passes_test(is_restaurante)
 def edit_produto_view(request, produto_id):
     produto = get_object_or_404(Produto, id=produto_id)
     if request.method == 'POST':
-        form = ProdutoForm(request.POST, instance=produto)
+        # Dados enviados via AJAX
+        data = json.loads(request.body)
+        form = ProdutoForm(data, instance=produto)
         if form.is_valid():
             form.save()
-            return redirect('home')
-    else:
-        form = ProdutoForm(instance=produto)
-    
-    context = {'form': form, 'produto': produto}
-    return render(request, 'restaurante/edit_produto.html', context)
+            return JsonResponse({'success': True, 'message': 'Produto atualizado com sucesso!'})
+        return JsonResponse({'success': False, 'errors': form.errors})
+    # Se não for POST, a view pode retornar os dados do produto para preencher um modal
+    return JsonResponse({
+        'id': produto.id,
+        'nome': produto.nome,
+        'preco': str(produto.preco),
+        'categoria': produto.categoria,
+    })
+
 
 @login_required
 @user_passes_test(is_restaurante)
@@ -113,9 +130,8 @@ def delete_produto_view(request, produto_id):
     produto = get_object_or_404(Produto, id=produto_id)
     if request.method == 'POST':
         produto.delete()
-        return redirect('home')
-    
-    return render(request, 'restaurante/delete_produto.html', {'produto': produto})
+        return JsonResponse({'success': True, 'message': 'Produto excluído com sucesso!'})
+    return JsonResponse({'success': False, 'message': 'Método de requisição inválido.'}, status=405)
 
 
 @login_required
@@ -136,13 +152,29 @@ def update_status_pedido_view(request, pedido_id):
 @login_required
 @user_passes_test(is_restaurante)
 def detalhes_pedido_view(request, pedido_id):
+    """View que retorna os detalhes de um pedido em formato JSON."""
     pedido = get_object_or_404(Pedido, id=pedido_id)
+
+    # Coleta os itens do pedido
     itens_pedido = pedido.itens.all()
-    context = {
-        'pedido': pedido,
-        'itens_pedido': itens_pedido
-    }
-    return render(request, 'restaurante/detalhes_pedido.html', context)
+    itens_json = []
+    for item in itens_pedido:
+        itens_json.append({
+            'produto_nome': item.produto.nome,
+            'quantidade': item.quantidade,
+            'preco_unitario': str(item.produto.preco),
+            'subtotal': str(item.produto.preco * item.quantidade),
+        })
+
+    # Retorna os dados completos do pedido
+    return JsonResponse({
+        'id': pedido.id,
+        'cliente_nome': pedido.cliente.username,
+        'data_criacao': pedido.criado_em.strftime('%d/%m/%Y, %H:%M'),
+        'status': pedido.get_status_display(),
+        'total': str(pedido.total),
+        'itens': itens_json,
+    })
 
 
 @login_required

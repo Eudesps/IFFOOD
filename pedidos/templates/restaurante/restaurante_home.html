@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IFFOOD - Admin</title>
     <style>
+        /* Estilos do Painel Administrativo */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: #f0f4f8;
@@ -59,30 +60,37 @@
             color: #718096;
             margin-top: 5px;
         }
-        .tabs {
+        .tabs-wrapper {
             display: flex;
             justify-content: center;
             margin-bottom: 30px;
         }
+        .tabs {
+            display: inline-flex;
+            background-color: #f7fafc;
+            border-radius: 50px;
+            padding: 5px;
+        }
         .tab-button {
-            padding: 10px 20px;
+            flex: 1;
+            padding: 12px 20px;
             font-size: 1rem;
             font-weight: 500;
             cursor: pointer;
-            border: 1px solid #e2e8f0;
-            background-color: #ffffff;
+            border-radius: 50px;
+            background-color: transparent;
             color: #4a5568;
-            border-radius: 8px;
-            margin: 0 5px;
+            border: none;
             transition: background-color 0.3s ease, box-shadow 0.3s ease;
             display: flex;
             align-items: center;
+            justify-content: center;
+            white-space: nowrap;
         }
         .tab-button.active {
-            background-color: #2d3748;
-            color: #ffffff;
-            border-color: #2d3748;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            color: #2d3748;
         }
         .tab-button svg {
             margin-right: 8px;
@@ -143,7 +151,7 @@
         .product-card .category {
             font-size: 0.75rem;
             color: #ffffff;
-            background-color: #e53e3e;
+            background-color: #363636ff;
             padding: 4px 8px;
             border-radius: 12px;
             display: inline-block;
@@ -252,6 +260,116 @@
         .pedido-actions .btn-details svg {
             margin-right: 5px;
         }
+        /* Estilos do Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 2000;
+        }
+        .modal-overlay.open {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            max-width: 500px;
+            width: 90%;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+        .modal-overlay.open .modal {
+            transform: scale(1);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .modal-header h3 {
+            font-size: 1.5rem;
+            margin: 0;
+            color: #2d3748;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #a0aec0;
+            line-height: 1;
+        }
+        .modal-close:hover {
+            color: #2d3748;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .btn-primary {
+            background-color: #2d3748;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .btn-secondary {
+            background-color: #f7fafc;
+            color: #4a5568;
+            border: 1px solid #e2e8f0;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .btn-danger {
+            background-color: #e53e3e;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .errorlist {
+            color: #e53e3e;
+            font-size: 0.85rem;
+            margin: 5px 0 0;
+            padding: 0;
+            list-style-type: none;
+        }
     </style>
 </head>
 <body>
@@ -275,41 +393,42 @@
             <p>Gerencie produtos e acompanhe pedidos do seu restaurante</p>
         </div>
 
-        <div class="tabs">
-            <button class="tab-button active" id="produtos-tab">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-package"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-                Produtos
-            </button>
-            <button class="tab-button" id="pedidos-tab">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-truck"><path d="M10 17H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"></path><path d="M12 17h10v-5a2 2 0 0 0-2-2h-8z"></path><circle cx="6" cy="17" r="2"></circle><circle cx="18" cy="17" r="2"></circle></svg>
-                Pedidos
-            </button>
+        <div class="tabs-wrapper">
+            <div class="tabs">
+                <button class="tab-button active" id="produtos-tab">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-package"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                    Produtos
+                </button>
+                <button class="tab-button" id="pedidos-tab">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-truck"><path d="M10 17H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"></path><path d="M12 17h10v-5a2 2 0 0 0-2-2h-8z"></path><circle cx="6" cy="17" r="2"></circle><circle cx="18" cy="17" r="2"></circle></svg>
+                    Pedidos
+                </button>
+            </div>
         </div>
-
         <div id="produtos-content" class="tab-content active">
             <div class="content-header">
                 <h2>Gerenciar Produtos</h2>
-                <a href="{% url 'add-produto' %}" class="btn-add-product">
+                <button id="add-product-btn" class="btn-add-product">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                     Adicionar Produto
-                </a>
+                </button>
             </div>
             
-            <div class="products-grid">
+            <div class="products-grid" id="products-grid">
                 {% for produto in produtos %}
-                <div class="product-card">
+                <div class="product-card" data-id="{{ produto.id }}">
                     <span class="category">{{ produto.categoria }}</span>
                     <h3>{{ produto.nome }}</h3>
-                    <p class="price">R$ {{ produto.preco }}</p>
+                    <p class="price">R$ {{ produto.preco|floatformat:2 }}</p>
                     <div class="actions">
-                        <a href="{% url 'edit-produto' produto.id %}" class="btn">
+                        <button class="btn edit-btn" data-id="{{ produto.id }}">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                             Editar
-                        </a>
-                        <a href="{% url 'delete-produto' produto.id %}" class="btn" onclick="return confirm('Tem certeza que deseja excluir este produto?');">
+                        </button>
+                        <button class="btn delete-btn" data-id="{{ produto.id }}">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                             Excluir
-                        </a>
+                        </button>
                     </div>
                 </div>
                 {% empty %}
@@ -332,11 +451,10 @@
                     </div>
                     <div class="pedido-actions">
                         <p class="price">R$ {{ pedido.total|floatformat:2 }}</p>
-                        <a href="{% url 'detalhes-pedido' pedido.id %}" class="btn-details">
+                        <button class="btn-details view-details-btn" data-id="{{ pedido.id }}">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                             Ver Detalhes
-                        </a>
-                        
+                        </button>
                         <form action="{% url 'update-status-pedido' pedido.id %}" method="post">
                             {% csrf_token %}
                             <select name="status" onchange="this.form.submit()">
@@ -354,37 +472,389 @@
         </div>
     </div>
 
+    <div id="product-modal-overlay" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modal-title">Adicionar Produto</h3>
+                <button class="modal-close" id="modal-close-btn">&times;</button>
+            </div>
+            <form id="product-form" method="post">
+                {% csrf_token %}
+                <input type="hidden" id="product-id" name="id">
+                <div class="form-group">
+                    <label for="id_nome">Nome do Produto:</label>
+                    <input type="text" id="id_nome" name="nome" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="id_preco">Preço:</label>
+                    <input type="number" id="id_preco" name="preco" class="form-control" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="id_categoria">Categoria:</label>
+                    <input type="text" id="id_categoria" name="categoria" class="form-control" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" id="cancel-btn">Cancelar</button>
+                    <button type="submit" class="btn-primary" id="save-btn">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="delete-modal-overlay" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Confirmar Exclusão</h3>
+                <button class="modal-close" id="delete-modal-close-btn">&times;</button>
+            </div>
+            <p>Tem certeza que deseja excluir o produto <strong id="delete-product-name"></strong>?</p>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="delete-cancel-btn">Cancelar</button>
+                <button type="button" class="btn-danger" id="delete-confirm-btn">Excluir</button>
+            </div>
+        </div>
+    </div>
+    <div id="success-modal-overlay" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 style="color: #38a169;">Sucesso!</h3>
+                <button class="modal-close" id="success-modal-close-btn">&times;</button>
+            </div>
+            <p id="success-message-text"></p>
+            <div class="modal-footer">
+                <button type="button" class="btn-primary" id="success-ok-btn">OK</button>
+            </div>
+        </div>
+    </div>
 
-    <script>
-    const produtosTab = document.getElementById('produtos-tab');
-    const pedidosTab = document.getElementById('pedidos-tab');
-    const produtosContent = document.getElementById('produtos-content');
-    const pedidosContent = document.getElementById('pedidos-content');
+    <div id="order-details-modal-overlay" class="modal-overlay">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 id="order-details-title">Detalhes do Pedido</h3>
+            <button class="modal-close" id="order-details-close-btn">&times;</button>
+        </div>
+        <div id="order-details-content">
+            <p><strong>Pedido #<span id="order-id"></span></strong></p>
+            <p><strong>Cliente:</strong> <span id="order-client"></span></p>
+            <p><strong>Data:</strong> <span id="order-date"></span></p>
+            <p><strong>Status:</strong> <span id="order-status"></span></p>
+            <hr>
+            <h4>Itens do Pedido</h4>
+            <ul id="order-items-list">
+                </ul>
+            <hr>
+            <div style="text-align: right;">
+                <p><strong>Total:</strong> <span id="order-total" style="font-size: 1.5rem; font-weight: bold; color: #38a169;"></span></p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" id="order-details-ok-btn">OK</button>
+        </div>
+    </div>
+</div>
+    
+<script>
+    const produtosTab = document.getElementById('produtos-tab');
+    const pedidosTab = document.getElementById('pedidos-tab');
+    const produtosContent = document.getElementById('produtos-content');
+    const pedidosContent = document.getElementById('pedidos-content');
+    const productsGrid = document.getElementById('products-grid');
 
-    function setActiveTab(tabName) {
-        if (tabName === 'pedidos') {
-            pedidosTab.classList.add('active');
-            produtosTab.classList.remove('active');
-            pedidosContent.classList.add('active');
-            produtosContent.classList.remove('active');
-        } else {
-            // Padrão para a aba de produtos
-            produtosTab.classList.add('active');
-            pedidosTab.classList.remove('active');
-            produtosContent.classList.add('active');
-            pedidosContent.classList.remove('active');
+    // Lógica do Modal de Detalhes do Pedido
+    const orderDetailsModalOverlay = document.getElementById('order-details-modal-overlay');
+    const orderDetailsTitle = document.getElementById('order-details-title');
+    const orderDetailsCloseBtn = document.getElementById('order-details-close-btn');
+    const orderDetailsOkBtn = document.getElementById('order-details-ok-btn');
+    const orderIdSpan = document.getElementById('order-id');
+    const orderClientSpan = document.getElementById('order-client');
+    const orderDateSpan = document.getElementById('order-date');
+    const orderStatusSpan = document.getElementById('order-status');
+    const orderTotalSpan = document.getElementById('order-total');
+    const orderItemsList = document.getElementById('order-items-list');
+
+    // Event listener para o botão "Ver Detalhes"
+    pedidosContent.addEventListener('click', (event) => {
+        const viewDetailsBtn = event.target.closest('.view-details-btn');
+        if (viewDetailsBtn) {
+            const pedidoId = viewDetailsBtn.dataset.id;
+            fetch(`{% url 'detalhes-pedido' 0 %}`.replace('0', pedidoId))
+                .then(response => response.json())
+                .then(data => {
+                    orderIdSpan.textContent = data.id;
+                    orderClientSpan.textContent = data.cliente_nome;
+                    orderDateSpan.textContent = data.data_criacao;
+                    orderStatusSpan.textContent = data.status;
+                    orderTotalSpan.textContent = `R$ ${parseFloat(data.total).toFixed(2)}`;
+
+                    // Preenche a lista de itens do pedido
+                    orderItemsList.innerHTML = '';
+                    data.itens.forEach(item => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `${item.quantidade}x ${item.produto_nome} - R$ ${parseFloat(item.subtotal).toFixed(2)}`;
+                        orderItemsList.appendChild(li);
+                    });
+                    
+                    orderDetailsModalOverlay.classList.add('open');
+                });
         }
-    }
-
-    produtosTab.addEventListener('click', () => setActiveTab('produtos'));
-    pedidosTab.addEventListener('click', () => setActiveTab('pedidos'));
-
-    // Lógica para verificar a URL e ativar a aba correta
-    document.addEventListener('DOMContentLoaded', () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const activeTab = urlParams.get('tab') || 'produtos';
-        setActiveTab(activeTab);
     });
-</script>
+
+    // Event listeners para fechar o modal
+    orderDetailsCloseBtn.addEventListener('click', () => hideModal(orderDetailsModalOverlay));
+    orderDetailsOkBtn.addEventListener('click', () => hideModal(orderDetailsModalOverlay));
+    orderDetailsModalOverlay.addEventListener('click', (e) => {
+        if (e.target === orderDetailsModalOverlay) hideModal(orderDetailsModalOverlay);
+    });
+
+    const urls = {
+        editProduto: "{% url 'edit-produto' 0 %}",
+        deleteProduto: "{% url 'delete-produto' 0 %}",
+        addProduto: "{% url 'add-produto' %}"
+    };
+
+    // Lógica de Tabs
+    function setActiveTab(tabName) {
+        if (tabName === 'pedidos') {
+            pedidosTab.classList.add('active');
+            produtosTab.classList.remove('active');
+            pedidosContent.classList.add('active');
+            produtosContent.classList.remove('active');
+        } else {
+            produtosTab.classList.add('active');
+            pedidosTab.classList.remove('active');
+            produtosContent.classList.add('active');
+            pedidosContent.classList.remove('active');
+        }
+    }
+    produtosTab.addEventListener('click', () => setActiveTab('produtos'));
+    pedidosTab.addEventListener('click', () => setActiveTab('pedidos'));
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const activeTab = urlParams.get('tab') || 'produtos';
+        setActiveTab(activeTab);
+    });
+
+    // Lógica dos Modais de Produto
+    const addProductBtn = document.getElementById('add-product-btn');
+    const productModalOverlay = document.getElementById('product-modal-overlay');
+    const productForm = document.getElementById('product-form');
+    const modalTitle = document.getElementById('modal-title');
+    const productIdInput = document.getElementById('product-id');
+    const nomeInput = document.getElementById('id_nome');
+    const precoInput = document.getElementById('id_preco');
+    const categoriaInput = document.getElementById('id_categoria');
+    const modalCloseBtn = document.getElementById('modal-close-btn');
+    const cancelBtn = document.getElementById('cancel-btn');
+
+    const deleteModalOverlay = document.getElementById('delete-modal-overlay');
+    const deleteConfirmBtn = document.getElementById('delete-confirm-btn');
+    const deleteCancelBtn = document.getElementById('delete-cancel-btn');
+    const deleteModalCloseBtn = document.getElementById('delete-modal-close-btn');
+    const deleteProductName = document.getElementById('delete-product-name');
+
+    const successModalOverlay = document.getElementById('success-modal-overlay');
+    const successMessageText = document.getElementById('success-message-text');
+    const successOkBtn = document.getElementById('success-ok-btn');
+    const successModalCloseBtn = document.getElementById('success-modal-close-btn');
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function createProductCardHTML(product) {
+        return `
+            <div class="product-card" data-id="${product.id}">
+                <span class="category">${product.categoria}</span>
+                <h3>${product.nome}</h3>
+                <p class="price">R$ ${parseFloat(product.preco).toFixed(2)}</p>
+                <div class="actions">
+                    <button class="btn edit-btn" data-id="${product.id}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        Editar
+                    </button>
+                    <button class="btn delete-btn" data-id="${product.id}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                        Excluir
+                    </button>
+                </div>
+            </div>
+            `;
+    }
+
+    function showModal(modal, productId = null) {
+        const errorContainers = modal.querySelectorAll('.errorlist');
+        errorContainers.forEach(el => el.innerHTML = '');
+
+        if (productId) {
+            fetch(urls.editProduto.replace('0', productId))
+                .then(response => response.json())
+                .then(data => {
+                    modalTitle.textContent = `Editar Produto: ${data.nome}`;
+                    productIdInput.value = data.id;
+                    nomeInput.value = data.nome;
+                    precoInput.value = parseFloat(data.preco).toFixed(2);
+                    categoriaInput.value = data.categoria;
+                    productModalOverlay.classList.add('open');
+                });
+            } else {
+                modalTitle.textContent = 'Adicionar Produto';
+                productIdInput.value = '';
+                productForm.reset();
+                productModalOverlay.classList.add('open');
+            }
+        }
+        
+        function hideModal(modal) {
+            modal.classList.remove('open');
+        }
+
+        function showSuccessPopup(message) {
+            successMessageText.textContent = message;
+            successModalOverlay.classList.add('open');
+        }
+
+        addProductBtn.addEventListener('click', () => showModal(productModalOverlay));
+        productsGrid.addEventListener('click', (event) => {
+            const editBtn = event.target.closest('.edit-btn');
+            const deleteBtn = event.target.closest('.delete-btn');
+
+            if (editBtn) {
+                const productId = editBtn.dataset.id;
+                showModal(productModalOverlay, productId);
+            } else if (deleteBtn) {
+                const productId = deleteBtn.dataset.id;
+                const productName = deleteBtn.closest('.product-card').querySelector('h3').textContent;
+                deleteModalOverlay.dataset.id = productId;
+                deleteProductName.textContent = productName;
+                deleteModalOverlay.classList.add('open');
+            }
+        });
+
+        modalCloseBtn.addEventListener('click', () => hideModal(productModalOverlay));
+        cancelBtn.addEventListener('click', () => hideModal(productModalOverlay));
+        deleteModalCloseBtn.addEventListener('click', () => hideModal(deleteModalOverlay));
+        deleteCancelBtn.addEventListener('click', () => hideModal(deleteModalOverlay));
+        successOkBtn.addEventListener('click', () => hideModal(successModalOverlay));
+        successModalCloseBtn.addEventListener('click', () => hideModal(successModalOverlay));
+
+        productModalOverlay.addEventListener('click', (e) => {
+            if (e.target === productModalOverlay) hideModal(productModalOverlay);
+        });
+        deleteModalOverlay.addEventListener('click', (e) => {
+            if (e.target === deleteModalOverlay) hideModal(deleteModalOverlay);
+        });
+        successModalOverlay.addEventListener('click', (e) => {
+            if (e.target === successModalOverlay) hideModal(successModalOverlay);
+        });
+        
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.startsWith(name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        productForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const productId = productIdInput.value;
+            const url = productId ? urls.editProduto.replace('0', productId) : urls.addProduto;
+            const method = 'POST';
+            const isAdding = !productId;
+
+            const formData = {
+                nome: nomeInput.value,
+                preco: precoInput.value,
+                categoria: categoriaInput.value
+            };
+
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                hideModal(productModalOverlay);
+
+                if (isAdding) {
+                    const newProductCardHTML = createProductCardHTML(data.produto);
+                    productsGrid.insertAdjacentHTML('beforeend', newProductCardHTML);
+                    showSuccessPopup('Produto adicionado com sucesso!');
+                } else {
+                    const updatedCard = productsGrid.querySelector(`.product-card[data-id="${productId}"]`);
+                    if (updatedCard) {
+                        updatedCard.querySelector('h3').textContent = formData.nome;
+                        updatedCard.querySelector('.category').textContent = formData.categoria;
+                        updatedCard.querySelector('.price').textContent = `R$ ${parseFloat(formData.preco).toFixed(2)}`;
+                    }
+                    showSuccessPopup('Produto atualizado com sucesso!');
+                }
+            } else {
+                const errorContainers = productModalOverlay.querySelectorAll('.errorlist');
+                errorContainers.forEach(el => el.innerHTML = '');
+
+                for (const [field, errors] of Object.entries(data.errors)) {
+                    const errorContainer = document.querySelector(`#id_${field}`).closest('.form-group').querySelector('.errorlist');
+                    if (errorContainer) {
+                        errors.forEach(error => {
+                            const li = document.createElement('li');
+                            li.textContent = error;
+                            errorContainer.appendChild(li);
+                        });
+                    }
+                }
+                console.error(data.errors);
+            }
+        });
+        
+        // Lógica para submissão da exclusão
+        deleteConfirmBtn.addEventListener('click', async () => {
+            const productId = deleteModalOverlay.dataset.id;
+            const url = urls.deleteProduto.replace('0', productId);
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+            });
+            const data = await response.json();
+            if (data.success) {
+                const cardToRemove = productsGrid.querySelector(`.product-card[data-id="${productId}"]`);
+                if (cardToRemove) {
+                    cardToRemove.remove();
+                }
+                hideModal(deleteModalOverlay);
+                showSuccessPopup('Produto excluído com sucesso!');
+            } else {
+                alert('Não foi possível excluir o produto.');
+            }
+        });
+    </script>
+</body>
+</html>
 </body>
 </html>
